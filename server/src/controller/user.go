@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -110,7 +111,7 @@ func Callback(c fiber.Ctx) error {
 	errFd := db.AddressBookDb.Collection("users").FindOne(context.TODO(), filter).Decode(&oldUser)
 	if errFd == mongo.ErrNoDocuments {
 		user := model.UserT{
-			Username: googleResUser.Name,
+			Username: strings.ToLower(googleResUser.Name),
 			Verified: googleResUser.VerifiedEmail,
 			Email:    googleResUser.Email,
 			Block:    block,
@@ -155,4 +156,20 @@ func Callback(c fiber.Ctx) error {
 	}
 	redirectUrl := "http://localhost:5173/profile?name=" + oldUser.Username + "&block=" + oldUser.Block + "&room=" + oldUser.Room
 	return c.Redirect().To(redirectUrl)
+}
+
+func SearchUser(c fiber.Ctx) error {
+	q := c.Queries()
+	reqName := q["q"]
+	if reqName == "" {
+		return c.Status(400).JSON(fiber.Map{"message": "Invalid query"})
+	}
+	filter := bson.D{{"username", bson.D{{"$regex", "^" + strings.ToLower(reqName)}}}}
+	cursor, err := db.AddressBookDb.Collection("users").Find(context.TODO(), filter)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"message": "Something went wrong"})
+	}
+	var users []model.UserT
+	cursor.All(context.TODO(), &users)
+	return c.JSON(fiber.Map{"users": users})
 }
