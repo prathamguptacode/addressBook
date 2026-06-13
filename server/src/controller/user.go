@@ -99,6 +99,10 @@ func Callback(c fiber.Ctx) error {
 	if block == "" || room == "" || floor == "" {
 		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
 	}
+	checkBlk := model.CheckValidBlock(block)
+	if checkBlk == false {
+		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
+	}
 
 	//db operation
 	filter := bson.D{{"email", googleResUser.Email}}
@@ -113,9 +117,34 @@ func Callback(c fiber.Ctx) error {
 			Room:     room,
 			Floor:    floor,
 		}
-		_, errDb := db.AddressBookDb.Collection("users").InsertOne(context.TODO(), user)
+		userIns, errDb := db.AddressBookDb.Collection("users").InsertOne(context.TODO(), user)
 		if errDb != nil {
 			return c.Status(500).JSON(fiber.Map{"message": "Something went wrong"})
+		}
+
+		var oldRoom model.RoomT
+		filter := bson.D{{"roomNumber", room}}
+		errRm := db.AddressBookDb.Collection(block).FindOne(context.TODO(), filter).Decode(&oldRoom)
+		if errRm == mongo.ErrNoDocuments {
+			newRoom := model.RoomT{
+				RoomNumber: room,
+				Members:    []bson.ObjectID{userIns.InsertedID.(bson.ObjectID)},
+				Floor:      floor,
+			}
+			_, errRio := db.AddressBookDb.Collection(block).InsertOne(context.TODO(), newRoom)
+			if errRio != nil {
+				return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
+			}
+			redirectUrl := "http://localhost:5173/profile?name=" + googleResUser.Name + "&block=" + block + "&room=" + room
+			return c.Redirect().To(redirectUrl)
+		}
+		if errRm != nil {
+			return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
+		}
+		update := bson.D{{"$push", bson.D{{"members", userIns.InsertedID.(bson.ObjectID)}}}}
+		_, errRo := db.AddressBookDb.Collection(block).UpdateOne(context.TODO(), filter, update)
+		if errRo != nil {
+			return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
 		}
 		redirectUrl := "http://localhost:5173/profile?name=" + googleResUser.Name + "&block=" + block + "&room=" + room
 		return c.Redirect().To(redirectUrl)
