@@ -28,6 +28,8 @@ func App() {
 
 	app.Get("/callback", controller.Callback)
 
+	app.Get("/rooms", controller.ViewRoom)
+
 	log.Println("Server port port 3000")
 	log.Fatal(app.Listen(":3000"))
 

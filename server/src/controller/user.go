@@ -130,6 +130,7 @@ func Callback(c fiber.Ctx) error {
 				RoomNumber: room,
 				Members:    []bson.ObjectID{userIns.InsertedID.(bson.ObjectID)},
 				Floor:      floor,
+				Block:      block,
 			}
 			_, errRio := db.AddressBookDb.Collection(block).InsertOne(context.TODO(), newRoom)
 			if errRio != nil {
