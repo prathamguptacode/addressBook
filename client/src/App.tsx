@@ -6,18 +6,24 @@ import Home from './pages/home';
 import ErrorPage from './pages/errorPage';
 import Form from './pages/form';
 import Success from './pages/success';
+import { Toaster } from './components/retroui/Sonner';
 
 function App() {
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/callback' element={<Form />} />
-        <Route path='/profile' element={<Success />} />
-        <Route path='*' element={<ErrorPage />} />
-      </Routes>
-    </BrowserRouter>
+    <div>
+
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/form' element={<Form />} />
+          <Route path='/profile' element={<Success />} />
+          <Route path='*' element={<ErrorPage />} />
+        </Routes>
+      </BrowserRouter>
+      <Toaster />
+
+    </div>
   )
 }
 

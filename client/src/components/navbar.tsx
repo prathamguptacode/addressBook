@@ -2,8 +2,12 @@ import mystyle from './navbar.module.css'
 import { BookUser, UserRoundPlus } from 'lucide-react'
 import { Input } from './retroui/Input'
 import { Button } from './retroui/Button'
+import { useNavigate } from 'react-router'
 
-function navbar() {
+function Navbar() {
+
+  const navigate = useNavigate()
+
   return (
     <div className={mystyle.navbar}>
       <div className={mystyle.logoBox} >
@@ -14,7 +18,7 @@ function navbar() {
         <Input placeholder='search...' type='text' />
       </div>
       <div>
-        <Button>
+        <Button onClick={() => navigate("/form")}>
           <div className={mystyle.btnContent}>
             <div>Add</div> <UserRoundPlus size={17} />
           </div>
@@ -24,4 +28,4 @@ function navbar() {
   )
 }
 
-export default navbar
+export default Navbar

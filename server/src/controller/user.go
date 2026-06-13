@@ -10,6 +10,8 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/prathamguptacode/addressBook/src/db"
 	"github.com/prathamguptacode/addressBook/src/model"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -72,7 +74,6 @@ func SignUser(c fiber.Ctx) error {
 }
 
 func Callback(c fiber.Ctx) error {
-
 	q := c.Queries()
 	code := q["code"]
 	if code == "" {
@@ -100,18 +101,28 @@ func Callback(c fiber.Ctx) error {
 	}
 
 	//db operation
-	user := model.UserT{
-		Username: googleResUser.Name,
-		Verified: googleResUser.VerifiedEmail,
-		Email:    googleResUser.Email,
-		Block:    block,
-		Room:     room,
-		Floor:    floor,
+	filter := bson.D{{"email", googleResUser.Email}}
+	var oldUser model.UserT
+	errFd := db.AddressBookDb.Collection("users").FindOne(context.TODO(), filter).Decode(&oldUser)
+	if errFd == mongo.ErrNoDocuments {
+		user := model.UserT{
+			Username: googleResUser.Name,
+			Verified: googleResUser.VerifiedEmail,
+			Email:    googleResUser.Email,
+			Block:    block,
+			Room:     room,
+			Floor:    floor,
+		}
+		_, errDb := db.AddressBookDb.Collection("users").InsertOne(context.TODO(), user)
+		if errDb != nil {
+			return c.Status(500).JSON(fiber.Map{"message": "Something went wrong"})
+		}
+		redirectUrl := "http://localhost:5173/profile?name=" + googleResUser.Name + "&block=" + block + "&room=" + room
+		return c.Redirect().To(redirectUrl)
 	}
-	_, errDb := db.AddressBookDb.Collection("users").InsertOne(context.TODO(), user)
-	if errDb != nil {
-		return c.Status(500).JSON(fiber.Map{"message": "Something went wrong"})
+	if errFd != nil {
+		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong "})
 	}
-	return c.Redirect().To("http://localhost:5173/profile")
-
+	redirectUrl := "http://localhost:5173/profile?name=" + oldUser.Username + "&block=" + oldUser.Block + "&room=" + oldUser.Room
+	return c.Redirect().To(redirectUrl)
 }

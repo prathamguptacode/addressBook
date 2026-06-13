@@ -5,7 +5,7 @@ function SelectBar() {
     <div className="flex gap-4 px-5 py-5">
       <Select>
         <Select.Trigger className="w-30">
-          <Select.Value placeholder="Building" />
+          <Select.Value placeholder="Block" />
         </Select.Trigger>
         <Select.Content>
           <Select.Group>
