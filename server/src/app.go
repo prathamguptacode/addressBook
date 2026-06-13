@@ -26,6 +26,8 @@ func App() {
 
 	app.Post("/verify/:block/:room", controller.SignUser)
 
+	app.Get("/callback", controller.Callback)
+
 	log.Println("Server port port 3000")
 	log.Fatal(app.Listen(":3000"))
 
