@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/prathamguptacode/addressBook/src/db"
 	"github.com/prathamguptacode/addressBook/src/model"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -90,5 +92,26 @@ func Callback(c fiber.Ctx) error {
 	if errJ != nil {
 		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
 	}
-	return c.JSON(fiber.Map{"user": googleResUser})
+	block := c.Cookies("block")
+	room := c.Cookies("room")
+	floor := c.Cookies("floor")
+	if block == "" || room == "" || floor == "" {
+		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
+	}
+
+	//db operation
+	user := model.UserT{
+		Username: googleResUser.Name,
+		Verified: googleResUser.VerifiedEmail,
+		Email:    googleResUser.Email,
+		Block:    block,
+		Room:     room,
+		Floor:    floor,
+	}
+	_, errDb := db.AddressBookDb.Collection("users").InsertOne(context.TODO(), user)
+	if errDb != nil {
+		return c.Status(500).JSON(fiber.Map{"message": "Something went wrong"})
+	}
+	return c.Redirect().To("http://localhost:5173/profile")
+
 }
