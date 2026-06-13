@@ -1,1 +1,28 @@
+.formTitle {
+  font-family: "Archivo Black", sans-serif;
+}
 
+.formBox {
+  margin: auto;
+}
+
+.profile {
+  position: absolute;
+  place-self: center;
+  inset: 0;
+  height: 100px;
+  width: 100px;
+  background-color: var(--color-primary);
+  border: 2px solid black;
+  border-radius: 8px;
+  color: black;
+  font-size: 28px;
+  font-weight: 800;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profileName {
+  font-family: "Archivo Black", sans-serif;
+}
