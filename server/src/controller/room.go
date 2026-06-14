@@ -8,6 +8,7 @@ import (
 	"github.com/prathamguptacode/addressBook/src/db"
 	"github.com/prathamguptacode/addressBook/src/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 func ViewRoom(c fiber.Ctx) error {
@@ -39,7 +40,11 @@ func ViewRoom(c fiber.Ctx) error {
 
 func getRoom(col string, r *[]model.RoomT, wg *sync.WaitGroup, m *sync.Mutex) {
 	defer wg.Done()
-	cursor, err := db.AddressBookDb.Collection(col).Find(context.TODO(), bson.D{{}})
+	// cursor, err := db.AddressBookDb.Collection(col).Find(context.TODO(), bson.D{{}})
+	grpStage := bson.D{
+		{"$lookup", bson.D{{"from", "users"}, {"localField", "members"}, {"foreignField", "_id"}, {"as", "membersD"}}},
+	}
+	cursor, err := db.AddressBookDb.Collection(col).Aggregate(context.TODO(), mongo.Pipeline{grpStage})
 	if err == nil {
 		var room []model.RoomT
 		cursor.All(context.TODO(), &room)
