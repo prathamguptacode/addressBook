@@ -11,10 +11,20 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
+type userT struct {
+	Username string `json:"username" bson:"username"`
+}
+type roomT struct {
+	RoomNumber string          `json:"roomNumber" bson:"roomNumber"`
+	Block      string          `json:"block" bson:"block"`
+	Members    []bson.ObjectID `json:"members" bson:"members"`
+	MemberD    []userT         `json:"membersD" bson:"membersD"`
+}
+
 func ViewRoom(c fiber.Ctx) error {
 	q := c.Queries()
 	reqFilter := q["q"]
-	resRoom := []model.RoomT{}
+	resRoom := []roomT{}
 	var wg = sync.WaitGroup{}
 	var m = sync.Mutex{}
 	if reqFilter == "" {
@@ -38,15 +48,48 @@ func ViewRoom(c fiber.Ctx) error {
 	return c.Status(400).JSON(fiber.Map{"message": "Invalid query"})
 }
 
-func getRoom(col string, r *[]model.RoomT, wg *sync.WaitGroup, m *sync.Mutex) {
+func getRoom(col string, r *[]roomT, wg *sync.WaitGroup, m *sync.Mutex) {
 	defer wg.Done()
 	// cursor, err := db.AddressBookDb.Collection(col).Find(context.TODO(), bson.D{{}})
 	grpStage := bson.D{
-		{"$lookup", bson.D{{"from", "users"}, {"localField", "members"}, {"foreignField", "_id"}, {"as", "membersD"}}},
+		{"$lookup",
+			bson.D{
+				{"from", "users"},
+				{"localField", "members"},
+				{"foreignField", "_id"},
+				{"pipeline",
+					bson.A{
+						bson.D{
+							{"$project", bson.D{
+								{"username", 1},
+							}},
+						},
+					}},
+				{"as", "membersD"},
+			},
+		},
 	}
+
+	//
+	// {
+	//    $lookup:
+	//      {
+	//        from: users,
+	//        localField: members,
+	//        foreignField: _id,
+	//         pipeline: [
+	//        {
+	//        $project:{"username":1}
+	//        }
+	//        ]
+	//        as: membersD
+	//      }
+	// }
+	//
+
 	cursor, err := db.AddressBookDb.Collection(col).Aggregate(context.TODO(), mongo.Pipeline{grpStage})
 	if err == nil {
-		var room []model.RoomT
+		var room []roomT
 		cursor.All(context.TODO(), &room)
 		m.Lock()
 		*r = append(*r, room...)
