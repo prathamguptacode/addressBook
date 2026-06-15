@@ -1,27 +1,39 @@
+import type { resRoom } from "@/types/resRoom"
 import { Accordion } from "./retroui/Accordion"
 
-function RoomBox() {
+function RoomBox({ rooms }: { rooms: resRoom[] }) {
+
+
   return (
     <div className="py-4 px-4 pt-2">
       <Accordion className="space-y-4 w-full flex gap-4 flex-col " multiple >
-        <Accordion.Item value="item-1">
-          <Accordion.Header>Accordion Item 1</Accordion.Header>
-          <Accordion.Content>
-            This is the content of the first accordion item.
-          </Accordion.Content>
-        </Accordion.Item>
-        <Accordion.Item value="item-2" >
-          <Accordion.Header>Accordion Item 2</Accordion.Header>
-          <Accordion.Content>
-            This is the content of the second accordion item.
-          </Accordion.Content>
-        </Accordion.Item>
-        <Accordion.Item value="item-3">
-          <Accordion.Header>Accordion Item 3</Accordion.Header>
-          <Accordion.Content>
-            This is the content of the third accordion item.
-          </Accordion.Content>
-        </Accordion.Item>
+        {
+          rooms.map(e => {
+            return (
+              <Accordion.Item key={e._id} value={e.roomNumber} >
+                <Accordion.Header >
+                  <div className="w-full flex justify-between items-center pr-4" id={`FLOOR_${e.floor}`} >
+                    <div>
+                      <strong>
+                        {e.roomNumber}
+                      </strong>
+                    </div>
+                    <div>
+                      {e.block}
+                    </div>
+                  </div>
+                </Accordion.Header>
+                <Accordion.Content>
+                  {
+                    e.membersD.map(m => {
+                      return <span>{m.username} </span>
+                    })
+                  }
+                </Accordion.Content>
+              </Accordion.Item>
+            )
+          })
+        }
       </Accordion>
     </div>
   )

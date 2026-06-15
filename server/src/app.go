@@ -33,6 +33,6 @@ func App() {
 	app.Get("/search", controller.SearchUser)
 
 	log.Println("Server port port 3000")
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(app.Listen(":3000", fiber.ListenConfig{EnablePrefork: true}))
 
 }

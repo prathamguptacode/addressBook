@@ -15,8 +15,10 @@ type userT struct {
 	Username string `json:"username" bson:"username"`
 }
 type roomT struct {
+	Id         bson.ObjectID   `json:"_id" bson:"_id"`
 	RoomNumber string          `json:"roomNumber" bson:"roomNumber"`
 	Block      string          `json:"block" bson:"block"`
+	Floor      string          `json:"floor" bson:"floor"`
 	Members    []bson.ObjectID `json:"members" bson:"members"`
 	MemberD    []userT         `json:"membersD" bson:"membersD"`
 }
@@ -69,6 +71,7 @@ func getRoom(col string, r *[]roomT, wg *sync.WaitGroup, m *sync.Mutex) {
 			},
 		},
 	}
+	sortStage := bson.D{{"$sort", bson.D{{"roomNumber", 1}}}}
 
 	//
 	// {
@@ -87,7 +90,7 @@ func getRoom(col string, r *[]roomT, wg *sync.WaitGroup, m *sync.Mutex) {
 	// }
 	//
 
-	cursor, err := db.AddressBookDb.Collection(col).Aggregate(context.TODO(), mongo.Pipeline{grpStage})
+	cursor, err := db.AddressBookDb.Collection(col).Aggregate(context.TODO(), mongo.Pipeline{grpStage, sortStage})
 	if err == nil {
 		var room []roomT
 		cursor.All(context.TODO(), &room)
