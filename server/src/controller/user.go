@@ -86,13 +86,16 @@ func Callback(c fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"message": "Something went wropng please try again later"})
 	}
 	client := gconf.Client(oauth2.NoContext, tok)
-	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
-	if err != nil {
+	resp, errC := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+	if errC != nil {
 		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
 	}
 	var googleResUser userGoogleT
 	errJ := json.NewDecoder(resp.Body).Decode(&googleResUser)
 	if errJ != nil {
+		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
+	}
+	if googleResUser.VerifiedEmail == false {
 		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
 	}
 	block := c.Cookies("block")
