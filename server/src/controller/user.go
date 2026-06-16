@@ -58,13 +58,14 @@ func SignUser(c fiber.Ctx) error {
 
 	cliendId := os.Getenv("CLIENT_ID")
 	clientSecret := os.Getenv("CLIENT_SECRET")
+	urlRed := os.Getenv("URL")
 	if cliendId == "" && clientSecret == "" {
 		return c.Status(500).JSON(fiber.Map{"message": "creds not found"})
 	}
 	conf := &oauth2.Config{
 		ClientID:     cliendId,
 		ClientSecret: clientSecret,
-		RedirectURL:  "http://localhost:3000/callback",
+		RedirectURL:  urlRed + "/callback",
 		Scopes:       []string{"email", "profile"},
 		Endpoint:     google.Endpoint,
 	}
@@ -105,6 +106,8 @@ func Callback(c fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
 	}
 
+	urlRed := os.Getenv("URL")
+
 	//db operation
 	filter := bson.D{{"email", googleResUser.Email}}
 	var oldUser model.UserT
@@ -137,7 +140,7 @@ func Callback(c fiber.Ctx) error {
 			if errRio != nil {
 				return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
 			}
-			redirectUrl := "http://localhost:5173/profile?name=" + googleResUser.Name + "&block=" + block + "&room=" + room
+			redirectUrl := urlRed + "/profile?name=" + googleResUser.Name + "&block=" + block + "&room=" + room
 			return c.Redirect().To(redirectUrl)
 		}
 		if errRm != nil {
@@ -148,13 +151,13 @@ func Callback(c fiber.Ctx) error {
 		if errRo != nil {
 			return c.Status(400).JSON(fiber.Map{"message": "Something went wrong"})
 		}
-		redirectUrl := "http://localhost:5173/profile?name=" + googleResUser.Name + "&block=" + block + "&room=" + room
+		redirectUrl := urlRed + "/profile?name=" + googleResUser.Name + "&block=" + block + "&room=" + room
 		return c.Redirect().To(redirectUrl)
 	}
 	if errFd != nil {
 		return c.Status(400).JSON(fiber.Map{"message": "Something went wrong "})
 	}
-	redirectUrl := "http://localhost:5173/profile?name=" + oldUser.Username + "&block=" + oldUser.Block + "&room=" + oldUser.Room
+	redirectUrl := urlRed + "/profile?name=" + oldUser.Username + "&block=" + oldUser.Block + "&room=" + oldUser.Room
 	return c.Redirect().To(redirectUrl)
 }
 

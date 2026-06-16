@@ -2,10 +2,12 @@ package src
 
 import (
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
-	"github.com/gofiber/fiber/v3/middleware/logger"
+
+	// "github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/prathamguptacode/addressBook/src/controller"
 	"github.com/prathamguptacode/addressBook/src/db"
 )
@@ -14,9 +16,13 @@ func App() {
 
 	db.Connect()
 	app := fiber.New()
-	app.Use(logger.New())
+	// app.Use(logger.New())
+	url := os.Getenv("URL")
+	if url == "" {
+		log.Fatal("URL not found")
+	}
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins:     []string{url},
 		AllowCredentials: true,
 	}))
 

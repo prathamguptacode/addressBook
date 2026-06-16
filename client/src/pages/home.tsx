@@ -6,6 +6,7 @@ import SelectBar from "@/components/selectBar"
 import type { resRoom } from "@/types/resRoom"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
+import { useNavigate } from "react-router"
 
 type resT = {
   rooms: resRoom[]
@@ -19,6 +20,12 @@ function Home() {
     queryFn: () => api.get<resT>(`/rooms?q=${block}`)
   })
 
+  const navigate = useNavigate()
+
+  if (error) {
+    return navigate("/error")
+  }
+
 
   return (
     <div>
@@ -30,6 +37,7 @@ function Home() {
             <Loader />
           </div>
           :
+          data &&
           <RoomBox rooms={data.data.rooms} />
       }
     </div>
