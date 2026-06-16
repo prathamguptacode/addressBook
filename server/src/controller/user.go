@@ -58,14 +58,14 @@ func SignUser(c fiber.Ctx) error {
 
 	cliendId := os.Getenv("CLIENT_ID")
 	clientSecret := os.Getenv("CLIENT_SECRET")
-	urlRed := os.Getenv("URL")
-	if cliendId == "" && clientSecret == "" {
+	clientUrl := os.Getenv("CLIENT_URL")
+	if cliendId == "" && clientSecret == "" && clientUrl == "" {
 		return c.Status(500).JSON(fiber.Map{"message": "creds not found"})
 	}
 	conf := &oauth2.Config{
 		ClientID:     cliendId,
 		ClientSecret: clientSecret,
-		RedirectURL:  urlRed + "/callback",
+		RedirectURL:  clientUrl,
 		Scopes:       []string{"email", "profile"},
 		Endpoint:     google.Endpoint,
 	}

@@ -26,7 +26,7 @@ function RoomBox({ rooms }: { rooms: resRoom[] }) {
                 <Accordion.Content>
                   {
                     e.membersD.map(m => {
-                      return <span>{m.username} </span>
+                      return <span className="px-1">{m.username}, </span>
                     })
                   }
                 </Accordion.Content>

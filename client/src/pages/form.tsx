@@ -20,7 +20,9 @@ function Form() {
       return toast.error("Please enter your Room")
     }
     const res = await api.post(`/verify/${block}/${room}`)
-    ref.current.continuousStart()
+    if (ref.current) {
+      ref.current.continuousStart()
+    }
     if (res.status == 200) {
       window.location = res.data.url
     }
@@ -45,7 +47,10 @@ function Form() {
           </div>
           <div>
             <div>Block</div>
-            <Select onValueChange={setBlock}>
+            <Select onValueChange={(e) => {
+              const block = String(e)
+              setBlock(block)
+            }}>
               <Select.Trigger className="w-60">
                 <Select.Value placeholder="Pick your Block" />
               </Select.Trigger>

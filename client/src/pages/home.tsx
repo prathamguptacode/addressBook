@@ -23,7 +23,7 @@ function Home() {
   const navigate = useNavigate()
 
   if (error) {
-    return navigate("/error")
+    navigate("/error")
   }
 
 

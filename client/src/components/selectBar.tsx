@@ -6,7 +6,10 @@ function SelectBar({ setBlock }: { setBlock: React.Dispatch<React.SetStateAction
 
   return (
     <div className="flex gap-4 px-5 py-5">
-      <Select onValueChange={setBlock}>
+      <Select onValueChange={(e) => {
+        const block = String(e)
+        setBlock(block)
+      }}>
         <Select.Trigger className="w-30">
           <Select.Value placeholder="Block" />
         </Select.Trigger>
